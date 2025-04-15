@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<%- include("../partials/head.ejs") %>
+<body>
+<nav class="navbar">
+    <ul class="nav-list">
+        <li><a href="/books">Books</a></li>
+        <li><a href="/user/profile">Profile</a></li>
+        <li><a href="#" class="logout">Logout</a></li>
+    </ul>
+</nav>
+<div id="message-container"></div>
+
+<form id="book-form" >
+    <div class="row">
+    <label for="title">Book Name</label>
+    <input type="text" id="title" name="title">
+    </div>
+    <div class="row">
+    <label for="author">Book Author</label>
+    <input type="text" id="author" name="author">
+    </div>
+    <div class="row">
+    <label for="description">Description</label>
+    <textarea id="description" name="description"></textarea>
+    </div>
+<!--    <div class="row">-->
+<!--    <label for="image">Book Image</label>-->
+<!--    <input type="file" id="image" name="imageUrl" >-->
+<!--    </div>-->
+    <button type="submit">Add Book</button>
+</form>
+
+<script src="/js/auth/userChecker.js"></script>
+<script src="/js/books/createBooks.js"></script>
+</body>
+</html>

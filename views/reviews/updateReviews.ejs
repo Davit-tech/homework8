@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<%- include("../partials/head.ejs") %>
+<body>
+<form id="review-form">
+    <h2>Edit reviews</h2>
+    <div class="row">
+        <label for="reviews">Reviews</label>
+        <textarea name="reviews" id="reviews">
+</textarea>
+    </div>
+    <div>
+        <label for="rating">Rating</label>
+        <select id="rating" name="rating">
+            <option value="" disabled selected>Select rating</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <input type="submit" value="Add review">
+    </div>
+</form>
+<script src="/js/auth/userChecker.js"></script>
+<script src="/js/reviews/updateReviews.js"></script>
+
+</body>
+</html>
