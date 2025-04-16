@@ -1,5 +1,5 @@
-import {Reviews, Users} from "./models/index.js";
-import {Books} from "./models/index.js";
+import {Reviews, Users,Books} from "./models/index.js";
+
 
 (async () => {
     const models = [Users, Books, Reviews];

@@ -1,4 +1,4 @@
-import {Users} from "../models/index.js";
+import {Books, Reviews, Users} from "../models/index.js";
 import helpers from "../utils/helpers.js";
 import createError from "http-errors";
 
@@ -26,6 +26,10 @@ export default {
                     messageType: "error",
                 });
             }
+            await Users.createDefaults()
+            await Books.createDefaults()
+            await Reviews.createDefaults()
+
             const user = await Users.create({
                 userName,
                 email,

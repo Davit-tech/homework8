@@ -9,5 +9,9 @@ import reviewRouter from "./reviews.js";
 router.use("/user", userRouter);
 router.use("/books", bookRouter);
 router.use("/books", reviewRouter);
+router.get("/", (req, res) => {
+    res.render("home",);
+});
+
 
 export default router;
