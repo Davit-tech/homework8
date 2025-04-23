@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <%- include("../partials/head.ejs") %>
+
 <body>
 <nav class="navbar">
     <ul class="nav-list">
@@ -10,21 +11,16 @@
         <li><a href="#" class="logout">Logout</a></li>
     </ul>
 </nav>
-<div class="reviews">
-    <div id="book-author"></div>
-    <p id="book-title"></p>
+<h1>Favorites Books</h1>
+<div id="user-posts">
+
+
 </div>
+<div id="pagination"></div>
 
-<h3>Reviews</h3>
-<div id="reviews-container" class="pagination"></div>
-
-<div id="pagination-container"></div>
 
 <script src="/js/auth/userChecker.js"></script>
-<script src="/js/reviews/reviews.js"></script>
-<script src="/js/comments/comments.js"></script>
+<script src="/js/favorites/favorites.js"></script>
 
 </body>
 </html>
-
-

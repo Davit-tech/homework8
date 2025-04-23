@@ -1,4 +1,5 @@
-import {Reviews, Books, Users} from "../models/index.js";
+import {Users, Books, Reviews} from "../models/index.js";
+
 import createError from "http-errors";
 
 export default {
@@ -37,37 +38,45 @@ export default {
 
     async getBookReviews(req, res, next) {
         const {bookId} = req.params;
-
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 1;
+        const offset = (page - 1) * limit;
         try {
-            const book = await Books.findByPk(bookId, {
-                include: [
-                    {
-                        model: Reviews,
-                        as: "reviews",
-                        include: [
-                            {
-                                model: Users,
-                                as: "user",
-                                attributes: ["id", "username", "email", "createdAt"],
-                            },
-                        ],
-                    },
-                ],
-            });
 
+            const book = await Books.findByPk(bookId);
             if (!book) {
                 return res.status(404).json({message: "Book not found"});
             }
+            const reviews = await Reviews.findAll({
+                where: {book_id: bookId},
+                include: [
+                    {
+                        model: Users,
+                        as: "user",
+                        attributes: ["id", "username", "email", "createdAt"],
+                    },
+                ],
+                limit,
+                offset,
+                order: [["createdAt", "DESC"]],
+            });
+            const totalReviews = await Reviews.count({where: {book_id: bookId}});
+
 
             res.status(200).json({
-                bookId: book.id,
-                title: book.title,
-                author: book.author,
-                reviews: book.reviews,
+                book,
+                reviews,
+                pagination: {
+                    total: totalReviews,
+                    page,
+                    totalPages: Math.ceil(totalReviews / limit),
+                },
+
             });
         } catch (err) {
             return next(createError("Error fetching reviews", err));
         }
+
     },
 
     async updateReview(req, res) {

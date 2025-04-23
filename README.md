@@ -16,6 +16,8 @@ the root of your project:
 - `DB_USER`: Username for accessing the database.
 - `DB_PASSWORD`: Password for the database user.
 - `DB_DATABASE`: The name of the database to connect to.
+- `MAIL_USER`:
+- `MAIL_PASSWORD` :
 
 ## Installing Dependencies
 

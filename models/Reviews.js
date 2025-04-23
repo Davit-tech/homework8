@@ -1,5 +1,7 @@
 import {DataTypes, Model} from 'sequelize';
 import db from "../clients/db.mysql.js";
+import Users from "./Users.js";
+import Books from "./Books.js";
 
 
 class Reviews extends Model {
@@ -105,5 +107,9 @@ Reviews.init({
     tableName: 'reviews',
     timestamps: true,
 });
+Users.hasMany(Reviews, {foreignKey: "user_id", as: "reviews"});
+Reviews.belongsTo(Users, {foreignKey: "user_id", as: "user"});
 
+Books.hasMany(Reviews, {foreignKey: "book_id", as: "reviews"});
+Reviews.belongsTo(Books, {foreignKey: "book_id", as: "book"});
 export default Reviews;

@@ -1,24 +1,45 @@
-import {Books, Reviews, Users} from "../models/index.js";
+import {Books, Favorites, Reviews, Users} from "../models/index.js";
 import helpers from "../utils/helpers.js";
 import createError from "http-errors";
+import {col, fn} from "sequelize";
+import mail from "../services/mail.js";
+import qs from "query-string";
 
 export default {
+    // Get Views
     async getRegisterView(req, res) {
         res.render("users/register");
     },
+
     async getLoginView(req, res) {
         res.render('users/login');
     },
+
     async getProfileView(req, res) {
         res.render("users/userProfile");
     },
+
     async getUserUpdateView(req, res) {
-        res.render("users/updateProfile", {})
+        res.render("users/updateProfile", {});
     },
+
+    async getFavoritesView(req, res) {
+        const userId = req.userId;
+        console.log(userId);
+        res.render("favorites/favorites", {userId});
+    },
+
+    async forgetPasswordView(req, res) {
+        res.render("users/forgot-password");
+    },
+
+    // User Registration and Activation
     async register(req, res) {
         const {userName, email, password} = req.body;
+
         try {
             const userEmail = await Users.findOne({where: {email}});
+
             if (userEmail) {
                 return res.status(422).json({
                     success: false,
@@ -26,29 +47,56 @@ export default {
                     messageType: "error",
                 });
             }
-            await Users.createDefaults()
-            await Books.createDefaults()
-            await Reviews.createDefaults()
 
-            const user = await Users.create({
-                userName,
+            const user = await Users.create({userName, email, password});
+            const token = await helpers.createToken({userId: user.id});
+
+            await mail(
                 email,
-                password
-            });
+                '"Maddison Foo Koch 👻" <maddison53@ethereal.email>',
+                "Profile activation email",
+                "activate-user",
+                {
+                    name: userName,
+                    link: `http://localhost:3000/user/activate?${qs.stringify({token})}`,
+                }
+            );
+
+            user.activationToken = token;
+            await user.save();
+
             res.status(201).json({
                 user,
                 success: true,
                 message: "Registration successful!",
                 messageType: "success",
             });
+
         } catch (err) {
             console.log(err);
         }
     },
+
+    async activate(req, res) {
+        const {token} = req.query;
+        const user = await Users.findOne({where: {activationToken: token}});
+
+        if (!user) {
+            return res.status(422).json({message: "Invalid activation token"});
+        }
+
+        user.status = "active";
+        await user.save();
+        res.render("userActive");
+    },
+
+    // User Login
     async login(req, res, next) {
         const {email, password} = req.body;
+
         try {
             const user = await Users.findOne({where: {email}});
+
             if (!user) {
                 return res.status(422).json({
                     success: false,
@@ -56,11 +104,20 @@ export default {
                     messageType: "error",
                 });
             }
-            const userId = user.id;
+
+            if (user.status !== 'active') {
+                return res.status(403).json({
+                    success: false,
+                    message: "Account is not activated. Please check your email to activate your account.",
+                    messageType: "error",
+                });
+            }
+
             const plainPassword = await user.dataValues.password;
             const isMatch = await Users.comparePassword(password, plainPassword);
+
             if (isMatch) {
-                const token = await helpers.createToken(userId);
+                const token = await helpers.createToken(user.id);
                 return res.status(200).json({
                     token,
                     user,
@@ -71,74 +128,202 @@ export default {
                 return res.status(422).json({
                     success: false,
                     messageType: "error",
-                    message: "invalid password",
+                    message: "Invalid password",
                 });
             }
 
+        } catch (err) {
+            return next(createError(500, `Server error. Please try again later: ${err.message}`));
+        }
+    },
+
+    // User Profile and Update
+    async profile(req, res, next) {
+        const id = req.userId;
+
+        if (!id) {
+            return next(createError(401, 'Authentication required'));
+        }
+
+        try {
+            const user = await Users.findOne({where: {id}});
+
+            if (!user) {
+                return next(createError(404, "User not found"));
+            }
+
+            res.status(200).json({user});
 
         } catch (err) {
             return next(createError(500, `Server error. Please try again later: ${err.message}`));
         }
     },
-    async profile(req, res, next) {
-        const id = req.userId;
-        if (!id) {
-            return next(createError(401, 'Authentication required'));
-        }
-        try {
-            const user = await Users.findOne({where: {id}});
-            if (!user) {
-                return next(createError(404, "User not found"));
-            }
-            res.status(200).json({
-                user
-            });
-        } catch (err) {
-            return next(createError(500, `Server error. Please try again later: ${err.message}`));
-        }
-    },
+
     async updateUserProfile(req, res) {
         const id = req.userId;
         const {userName, email} = req.body;
 
         try {
-
             const user = await Users.findByPk(id);
-            console.log(user);
+
             if (!user) {
-                console.log("user not found");
-                return res.status(404).json({message: "user not found"});
+                console.log("User not found");
+                return res.status(404).json({message: "User not found"});
             }
 
             await Users.update({userName, email}, {where: {id}});
 
-            res.json({
-                message: "Profile updated successfully",
-            });
+            res.json({message: "Profile updated successfully"});
+
         } catch (error) {
             console.log(error);
         }
     },
+
     async deleteUser(req, res) {
         const id = req.userId;
 
         try {
-
             const result = await Users.destroy({where: {id}});
+
             if (!result) {
-                return res.status(404).json({
-                    message: "User not found",
-                });
+                return res.status(404).json({message: "User not found"});
             }
 
+            res.status(200).json({message: "User deleted successfully"});
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({message: "Failed to delete user"});
+        }
+    },
+
+    // Forgot Password and Reset
+    async forgotPassword(req, res) {
+        const {email} = req.body;
+
+        try {
+            const user = await Users.findOne({where: {email}});
+
+            if (!user) {
+                return res.status(404).json({message: "User not found"});
+            }
+
+            const token = await helpers.createToken({userId: user.id});
+
+            await mail(
+                email,
+                '"Maddison Foo Koch 👻" <maddison53@ethereal.email>',
+                "Password Reset",
+                "reset-password",
+                {
+                    name: user.userName,
+                    link: `http://localhost:3000/user/reset-password?token=${token}`,
+                }
+            );
+
+            res.json({message: "Password reset email sent."});
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({message: "Error sending reset email."});
+        }
+    },
+
+    async resetPassword(req, res) {
+        const userId = req.userId;
+        const {newPassword} = req.body;
+
+        try {
+            const user = await Users.findByPk(userId);
+
+            if (!user) {
+                return res.status(404).json({message: "User not found"});
+            }
+
+            user.password = await Users.passwordHash(newPassword);
+            await user.save();
+
+            res.json({message: "Password has been updated."});
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({message: "Failed to reset password"});
+        }
+    },
+
+    // Favorites and Avatar
+    async GetFavorites(req, res) {
+        try {
+            const userId = req.userId;
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 3;
+            const offset = (page - 1) * limit;
+
+            if (!userId) {
+                return res.status(400).json({error: "User ID is required"});
+            }
+
+            const favorites = await Favorites.findAll({
+                limit,
+                offset,
+                where: {user_id: userId},
+                include: [
+                    {
+                        model: Books,
+                        as: "book",
+                        attributes: {
+                            include: [[fn("ROUND", fn("AVG", col("book.reviews.rating")), 1), "avgRating"]],
+                        },
+                        include: [
+                            {model: Reviews, as: "reviews", attributes: []},
+                        ],
+                    },
+                ],
+                group: ["favorites.id", "book.id"],
+                subQuery: false,
+            });
+
+            const totalFavorites = await Favorites.count({where: {user_id: userId}});
+
             res.status(200).json({
-                message: "User deleted successfully",
+                favorites,
+                pagination: {
+                    total: totalFavorites,
+                    page,
+                    totalPages: Math.ceil(totalFavorites / limit),
+                },
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({
-                message: "Failed to delete user",
+            res.status(500).json({error: "Failed to fetch favorites"});
+        }
+    },
+
+    async postAvatar(req, res) {
+        try {
+            const userId = req.userId;
+
+            if (!userId) {
+                return res.status(401).json({message: "Unauthorized"});
+            }
+
+            const imgUrl = req.file;
+            console.log(imgUrl);
+            const avatarPath = imgUrl.path.replace("public/uploads", "");
+
+            await Users.update(
+                {avatar: avatarPath},
+                {where: {id: userId}}
+            );
+
+            res.status(201).json({
+                message: "Avatar uploaded and saved to DB",
+                avatar: avatarPath,
             });
+
+        } catch (error) {
+            console.log(error);
         }
     },
 };

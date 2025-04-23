@@ -1,18 +1,12 @@
 import {DataTypes, Model} from 'sequelize';
 import db from "../clients/db.mysql.js";
-import bcrypt from "bcrypt";
+
+import Users from "./Users.js";
+import Books from "./Books.js";
 
 
-class Users extends Model {
-    static async passwordHash(password) {
-        const saltRounds = 10;
-        return await bcrypt.hash(password, saltRounds);
-    }
+class Favorites extends Model {
 
-
-    static async comparePassword(plainPassword, hashedPassword) {
-        return await bcrypt.compare(plainPassword, hashedPassword);
-    }
 
     static async createDefaults() {
         const defaultUsers = [
@@ -38,54 +32,26 @@ class Users extends Model {
     }
 }
 
-Users.init({
+Favorites.init({
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
     },
-    userName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        set(value) {
-            const saltRounds = bcrypt.genSaltSync(10);
-            const hash = bcrypt.hashSync(value, saltRounds);
-            this.setDataValue("password", hash);
-        },
-        get() {
-            return undefined;
-        }
-    },
-    status: {
-        type: DataTypes.STRING,
-        defaultValue: "pending",
-    },
-    activationToken: {
-        type: DataTypes.STRING,
-        allowNull: true,
 
-    },
-    avatar: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    }
+
 }, {
     sequelize: db,
-    tableName: "users",
-    modelName: "users",
-    indexes: [
-        {fields: ["email"], unique: true},
-    ]
+    tableName: "favorites",
+    modelName: "favorites",
+
 });
+Users.hasMany(Favorites, {foreignKey: "user_id", as: "favorites"});
+Favorites.belongsTo(Users, {foreignKey: "user_id", as: "user"});
+
+Favorites.belongsTo(Books, {foreignKey: "book_id", as: "book"});
+Books.hasMany(Favorites, {foreignKey: "book_id", as: "favorites"});
 
 
-export default Users;
+export default Favorites;

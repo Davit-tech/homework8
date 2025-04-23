@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 
 const {USER_AUTH_SECRET} = process.env;

@@ -1,9 +1,10 @@
-import dotenv from "dotenv/config.js";
+import "dotenv/config.js";
 import "./migrate.js";
 import express from "express";
 import morgan from "morgan";
-import path from "path";
-import route from "./routers/index.js";
+import {resolve} from "path";
+import router from "./routers/index.js";
+import "./services/mail.js"
 
 const app = express();
 
@@ -13,12 +14,12 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(morgan("dev"));
 
-const publicPath = path.resolve("public");
-const viewsPath = path.resolve("views");
-app.use(express.static(publicPath));
+app.use(express.static(resolve("public")));
 app.set("view engine", "ejs");
-app.set("views", viewsPath);
-app.use(route);
+app.set("views", resolve("views"));
+
+app.use(router);
+
 app.listen(PORT, () => {
     console.log(`Listening on ${PORT}`);
 });

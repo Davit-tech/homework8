@@ -6,8 +6,18 @@ export default {
         email: joi.string().email().required(),
         password: joi.string().min(3).max(50).required(),
     }),
+    activate: joi.object({
+        token: joi.string().required(),
+    }),
     login: joi.object({
         email: joi.string().email().required(),
         password: joi.string().required(),
-    })
+    }),
+    forgotPassword: joi.object({
+        email: joi.string().email().required()
+    }),
+
+    resetPassword: joi.object({
+        newPassword: joi.string().min(3).max(50).required(),
+    }),
 };

@@ -1,5 +1,6 @@
 import {DataTypes, Model} from 'sequelize';
 import db from "../clients/db.mysql.js";
+import Users from "./Users.js";
 
 
 class Books extends Model {
@@ -84,26 +85,39 @@ Books.init({
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
+
     },
     title: {
         type: DataTypes.STRING,
         allowNull: false,
+
     },
 
     author: {
         type: DataTypes.STRING,
         allowNull: false,
+
     },
     description: {
         type: DataTypes.STRING,
         allowNull: true,
+
+
+    },
+    bookCover: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     sequelize: db,
     modelName: 'Books',
     tableName: 'books',
     timestamps: true,
+
 });
+Books.belongsTo(Users, {foreignKey: "user_id", as: "user"});
+
+Users.hasMany(Books, {foreignKey: "user_id", as: "books"});
 
 
 export default Books;

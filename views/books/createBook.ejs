@@ -11,7 +11,7 @@
 </nav>
 <div id="message-container"></div>
 
-<form id="book-form" >
+<form id="book-form" enctype="multipart/form-data" >
     <div class="row">
     <label for="title">Book Name</label>
     <input type="text" id="title" name="title">
@@ -24,10 +24,10 @@
     <label for="description">Description</label>
     <textarea id="description" name="description"></textarea>
     </div>
-<!--    <div class="row">-->
-<!--    <label for="image">Book Image</label>-->
-<!--    <input type="file" id="image" name="imageUrl" >-->
-<!--    </div>-->
+    <div class="row">
+    <label for="image">Book Image</label>
+    <input type="file" id="image" name="bookCover" >
+    </div>
     <button type="submit">Add Book</button>
 </form>
 

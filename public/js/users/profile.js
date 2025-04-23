@@ -1,6 +1,11 @@
-(async () => {
-    const userInfo = document.querySelector("#user-info");
+document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Token not found!");
+        return;
+    }
+
 
     const response = await fetch("/user/profile/data", {
         method: "GET",
@@ -11,7 +16,8 @@
     });
 
     const userData = await response.json();
-    const {userName, email, createdAt, updatedAt} = userData.user;
+    const {userName, email, createdAt, updatedAt, avatar} = userData.user;
+
 
     const formattedCreated = new Date(createdAt).toLocaleString("en-GB", {
         day: "2-digit",
@@ -31,57 +37,42 @@
         })
         : null;
 
-    if (userInfo && userData) {
-        userInfo.innerHTML = `
-            <div class="profile-field"><strong>Username:</strong> ${userName}</div>
-            <div class="profile-field"><strong>Email:</strong> ${email}</div>
-            <div class="profile-field"><strong>Profile Created:</strong> ${formattedCreated}</div>
-            ${formattedUpdated ? `<div class="profile-field"><strong>Last Updated:</strong> ${formattedUpdated}</div>` : ''}
-        `;
 
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit Profile";
-        editButton.classList.add("edit-profile-button");
+    document.querySelector("#username").textContent = userName;
+    document.querySelector("#email").textContent = email;
+    document.querySelector("#created-at").textContent = formattedCreated;
 
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "Delete Profile";
-        deleteButton.classList.add("delete-profile-button");
-
-        userInfo.appendChild(editButton);
-        userInfo.appendChild(deleteButton);
-
-        editButton.addEventListener("click", () => {
-            window.location.href = `/user/profile/update`;
-        });
-
-        deleteButton.addEventListener("click", async () => {
-            if (confirm("Are you sure you want to delete User?")) {
-                const res = await fetch("/user/profile", {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "authorization": `Bearer ${token}`,
-                    },
-                });
-                if (res.ok) {
-                    alert("User successfully deleted!");
-                    localStorage.removeItem("token");
-                    window.location.href = "/user/login";
-                } else {
-                    alert("Error deleting user");
-                }
-            }
-        });
-    } else {
-        console.log("No user data");
+    // document.querySelector("#updated-at").textContent = formattedUpdated;
+    if (formattedUpdated) {
+        document.querySelector("#updated-at").textContent = formattedUpdated;
+        document.querySelector("#updated-block").style.display = "block";
     }
-})();
+    document.querySelector("#avatar-img").src = `/uploads/${avatar || 'anonymous-logo.png'}`;
 
-const logout = document.querySelector(".logout");
-if (logout) {
-    logout.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        window.location.href = "/user/login";
-        window.location.reload();
+
+    const editButton = document.querySelector(".edit-profile-button");
+    const deleteButton = document.querySelector(".delete-profile-button");
+
+    editButton.addEventListener("click", () => {
+        window.location.href = `/user/profile/update`;
     });
-}
+
+    deleteButton.addEventListener("click", async () => {
+        if (confirm("Are you sure you want to delete this user?")) {
+            const res = await fetch("/user/profile", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": `Bearer ${token}`,
+                },
+            });
+            if (res.ok) {
+                alert("User successfully deleted!");
+                localStorage.removeItem("token");
+                window.location.href = "/user/login";
+            } else {
+                alert("Error deleting user");
+            }
+        }
+    });
+});

@@ -1,5 +1,7 @@
-import {Books, Reviews} from "../models/index.js";
+import {Books, Reviews, Users} from "../models/index.js";
 import createError from "http-errors";
+import {col, fn} from "sequelize";
+
 
 export default {
     // Views for Books
@@ -17,10 +19,11 @@ export default {
 
     // API for Books
     async getBooks(req, res, next) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 4;
-        const offset = (page - 1) * limit;
         try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 6;
+
+            const offset = (page - 1) * limit;
             const booksData = await Books.findAll({
                 limit,
                 offset,
@@ -29,8 +32,18 @@ export default {
                     {
                         model: Reviews,
                         as: "reviews",
+                        attributes: [],
                     },
                 ],
+                attributes: {
+                    include: [
+                        [fn("ROUND", fn("AVG", col("reviews.rating")), 1), "avgRating"]
+                    ],
+                },
+                group: ["Books.id"],
+                subQuery: false,
+                raw: true,
+                logging: console.log
             });
             const totalBooks = await Books.count();
             res.status(200).json({
@@ -39,6 +52,7 @@ export default {
                     total: totalBooks,
                     page,
                     totalPages: Math.ceil(totalBooks / limit),
+
                 },
             });
         } catch (err) {
@@ -49,10 +63,14 @@ export default {
     async createBook(req, res, next) {
         const {title, author, description} = req.body;
         const userId = req.userId;
+        const file = req.file;
+        console.log(file)
+        console.log(req.file);
 
         if (!userId) {
             return res.status(400).json({error: "User ID is missing. Please log in first."});
         }
+        const avatarPath = file.path.replace("public/uploads", "");
 
         try {
             const booksData = await Books.create({
@@ -60,6 +78,8 @@ export default {
                 title,
                 author,
                 description,
+                bookCover: avatarPath,
+
             });
             res.status(200).json({booksData, success: true});
         } catch (err) {
@@ -94,4 +114,5 @@ export default {
             res.status(500).json({message: "Error deleting book", error: err.message});
         }
     },
+
 };

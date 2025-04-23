@@ -5,14 +5,14 @@
     const response = await fetch("/user/profile/data", {
         method: "GET",
         headers: {
-            "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
         }
     });
 
-    const user = await response.json();
-    const userId = user.user.id;
-
+    const {user: {id: userId, userName}} = await response.json();
+    document.querySelector(".navbar .nav-list").innerHTML += `
+            <li><a href="/user/${userId}/favorites">Favorites</a></li>
+        `;
     let currentPage = 1;
     const limit = 6;
 
@@ -33,45 +33,44 @@
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
             }
         });
 
         const {booksData, pagination} = await responseBook.json();
 
-        const renderBooks = (booksData, userId) => {
-            if (!Array.isArray(booksData)) {
-                return '';
-            }
+        const renderBooks = (books, userId) => {
+            if (!Array.isArray(books)) return '';
 
             let booksHtml = "";
-            for (const book of booksData) {
+            for (const book of books) {
+                const bookCover = book.bookCover;
                 const createdFormatted = formatDate(book.createdAt);
                 const updatedFormatted = formatDate(book.updatedAt);
+                const avgRating = book.avgRating ? book.avgRating : 'No rating yet';
 
-                const averageRating = book.reviews?.length
-                    ? (book.reviews.reduce((sum, review) => sum + review.rating, 0) / book.reviews.length).toFixed(1)
-                    : "No Rating yet";
 
                 booksHtml += `
                     <div class="userdata">
+                        <button class="btn-add-favorite" data-id="${book.id}">Add to Favorites</button><br>
+
+                        <img src="/uploads/${bookCover || 'book-covers.jpg'}" alt="book cover" class="book-cover"> <br>
                         <strong>Book Author:</strong> ${book.author} <br><br>
                         <strong>Description:</strong> ${book.description} <br><br>
-                        <strong>Book Name:</strong> ${book.title} <br> <br>
-                        <strong>User Name:</strong> ${user.user.userName} <br><br>
-                        <div class="rating">Rating: ${averageRating}</div> <br><br>
+                        <strong>Book Name:</strong> ${book.title} <br><br>
+                        <strong>User Name:</strong> ${userName} <br><br>
+                        <div class="rating">Rating: ${avgRating}</div> <br><br>
                         ${createdFormatted ? `<strong>Created:</strong> ${createdFormatted} <br>` : ''}
-${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</strong> ${updatedFormatted} <br>` : ''}
-
+                        ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</strong> ${updatedFormatted} <br>` : ''}
                         ${book.user_id === userId ? `
-                            <input type="submit" value="Delete" class="btn-delete" data-id="${book.id}">
+                            <button class="btn-delete" data-id="${book.id}">Delete</button>
                             <a href="/books/${book.id}/update" class="btn-edit" data-id="${book.id}">Edit Book</a>
                         ` : ""} <br>
                         <a href="/books/${book.id}/createReviews" class="btn-write-review">Write Reviews</a><br>
-                        <a href="/books/${book.id}/reviews" class="btn-read-reviews">Read Reviews</a>
+                        <a href="/books/${book.id}/reviews" class="btn-read-reviews">Read Reviews</a><br>
                     </div>
                 `;
             }
+
             return booksHtml;
         };
 
@@ -101,7 +100,6 @@ ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</str
         }
     });
 
-
     booksContainer.addEventListener("click", async (event) => {
         if (event.target.classList.contains("btn-delete")) {
             const bookId = event.target.getAttribute("data-id");
@@ -111,14 +109,13 @@ ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</str
                     const response = await fetch(`/books/${bookId}`, {
                         method: "DELETE",
                         headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
+                            "Authorization": `Bearer ${token}`
                         },
                     });
 
                     if (response.status === 204) {
                         alert("Book Deleted");
-                     window.location.reload();
+                        window.location.reload();
                     } else {
                         alert("Error deleting book.");
                     }
@@ -128,13 +125,42 @@ ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</str
                 }
             }
         }
+
+        if (event.target.classList.contains("btn-add-favorite")) {
+            const bookId = event.target.getAttribute("data-id");
+
+            try {
+                const response = await fetch(`/books/${bookId}/favorites`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        book_id: bookId
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Book added to favorites!");
+                } else if (response.status === 409) {
+                    alert("Book is already in favorites.");
+                } else {
+                    alert("Failed to add to favorites.");
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Error adding to favorites.");
+            }
+        }
     });
 })();
+
 const logout = document.querySelector(".logout");
 if (logout) {
     logout.addEventListener("click", () => {
         localStorage.removeItem("token");
         window.location.href = "/user/login";
-        window.location.reload();
     });
 }
