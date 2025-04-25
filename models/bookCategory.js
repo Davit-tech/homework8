@@ -29,7 +29,7 @@ BookCategory.init({
 Category.belongsToMany(Books, {
     through: BookCategory,
     foreignKey: 'category_id',
-    otherKey: 'book_id',
+    otherKey: 'bookId',
     as: 'books'
 });
 

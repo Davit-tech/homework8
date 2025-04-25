@@ -15,7 +15,7 @@ document.getElementById("forgot-password-form").addEventListener("submit", async
 
         const data = await res.json();
 
-        if (res.ok) {
+        if (res.ok) {z
             messageElement.textContent = data.message || "Check your email for reset link.";
             messageElement.style.color = "green";
         } else {

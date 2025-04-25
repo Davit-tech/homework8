@@ -24,8 +24,8 @@ export default {
 
         try {
             const newReview = await Reviews.create({
-                book_id: bookId,
-                user_id: userId,
+                bookId: bookId,
+                userId: userId,
                 reviews,
                 rating: parseInt(rating),
             });
@@ -48,7 +48,7 @@ export default {
                 return res.status(404).json({message: "Book not found"});
             }
             const reviews = await Reviews.findAll({
-                where: {book_id: bookId},
+                where: {bookId: bookId},
                 include: [
                     {
                         model: Users,
@@ -60,7 +60,7 @@ export default {
                 offset,
                 order: [["createdAt", "DESC"]],
             });
-            const totalReviews = await Reviews.count({where: {book_id: bookId}});
+            const totalReviews = await Reviews.count({where: {bookId: bookId}});
 
 
             res.status(200).json({
@@ -101,7 +101,7 @@ export default {
             const review = await Reviews.findByPk(reviewId);
             if (!review) return res.status(404).json({message: "Review not found"});
 
-            if (review.user_id !== req.userId) {
+            if (review.userId !== req.userId) {
                 return res.status(403).json({message: "You are not allowed to delete this review"});
             }
 

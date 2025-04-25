@@ -9,7 +9,7 @@ export default {
 
             const newComment = await Comments.create({
                 comments,
-                user_id: userId,
+                userId: userId,
                 review_id: reviewId
             });
 

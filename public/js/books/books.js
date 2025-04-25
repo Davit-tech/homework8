@@ -1,6 +1,8 @@
 (async () => {
     const booksContainer = document.querySelector("#user-posts");
     const token = localStorage.getItem("token");
+    const searchInput = document.querySelector("#searchInput");
+
 
     const response = await fetch("/user/profile/data", {
         method: "GET",
@@ -11,10 +13,12 @@
 
     const {user: {id: userId, userName}} = await response.json();
     document.querySelector(".navbar .nav-list").innerHTML += `
-            <li><a href="/user/${userId}/favorites">Favorites</a></li>
-        `;
+        <li><a href="/user/${userId}/favorites">Favorites</a></li>
+    `;
+
     let currentPage = 1;
     const limit = 6;
+    let searchQuery = "";
 
     const formatDate = (date) => {
         return date
@@ -28,8 +32,8 @@
             : '';
     };
 
-    const fetchBooks = async (page) => {
-        const responseBook = await fetch(`/books/data?page=${page}&limit=${limit}`, {
+    const fetchBooks = async (page, searchQuery = "") => {
+        const responseBook = await fetch(`/books/data?page=${page}&limit=${limit}&q=${searchQuery}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -48,11 +52,9 @@
                 const updatedFormatted = formatDate(book.updatedAt);
                 const avgRating = book.avgRating ? book.avgRating : 'No rating yet';
 
-
                 booksHtml += `
                     <div class="userdata">
                         <button class="btn-add-favorite" data-id="${book.id}">Add to Favorites</button><br>
-
                         <img src="/uploads/${bookCover || 'book-covers.jpg'}" alt="book cover" class="book-cover"> <br>
                         <strong>Book Author:</strong> ${book.author} <br><br>
                         <strong>Description:</strong> ${book.description} <br><br>
@@ -61,7 +63,7 @@
                         <div class="rating">Rating: ${avgRating}</div> <br><br>
                         ${createdFormatted ? `<strong>Created:</strong> ${createdFormatted} <br>` : ''}
                         ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</strong> ${updatedFormatted} <br>` : ''}
-                        ${book.user_id === userId ? `
+                        ${book.userId === userId ? `
                             <button class="btn-delete" data-id="${book.id}">Delete</button>
                             <a href="/books/${book.id}/update" class="btn-edit" data-id="${book.id}">Edit Book</a>
                         ` : ""} <br>
@@ -90,13 +92,13 @@
         }
     };
 
-    await fetchBooks(currentPage);
+    await fetchBooks(currentPage, searchQuery);
 
     document.body.addEventListener("click", async (event) => {
         if (event.target.classList.contains("page-btn")) {
             const page = event.target.getAttribute("data-page");
             currentPage = parseInt(page);
-            await fetchBooks(currentPage);
+            await fetchBooks(currentPage, searchQuery);
         }
     });
 
@@ -137,8 +139,8 @@
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        user_id: userId,
-                        book_id: bookId
+                        userId: userId,
+                        bookId: bookId
                     })
                 });
 
@@ -155,12 +157,18 @@
             }
         }
     });
+
+
+    searchInput.addEventListener("input", () => {
+        searchQuery = searchInput.value;
+        fetchBooks(currentPage, searchQuery);
+    });
+    const logout = document.querySelector(".logout");
+    if (logout) {
+        logout.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            location.href = "/user/login";
+        });
+    }
 })();
 
-const logout = document.querySelector(".logout");
-if (logout) {
-    logout.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        window.location.href = "/user/login";
-    });
-}

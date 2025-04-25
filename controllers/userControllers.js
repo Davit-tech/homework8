@@ -4,6 +4,7 @@ import createError from "http-errors";
 import {col, fn} from "sequelize";
 import mail from "../services/mail.js";
 import qs from "query-string";
+import path from "path";
 
 export default {
     // Get Views
@@ -25,12 +26,14 @@ export default {
 
     async getFavoritesView(req, res) {
         const userId = req.userId;
-        console.log(userId);
         res.render("favorites/favorites", {userId});
     },
 
     async forgetPasswordView(req, res) {
         res.render("users/forgot-password");
+    },
+    async resetPasswordView(req, res) {
+        res.render("users/reset-password");
     },
 
     // User Registration and Activation
@@ -59,7 +62,13 @@ export default {
                 {
                     name: userName,
                     link: `http://localhost:3000/user/activate?${qs.stringify({token})}`,
-                }
+                },
+                [
+                    {
+                        filename: "book-covers.jpg",
+                        path: path.join(import.meta.dirname, "../public/uploads/book-covers.jpg")
+                    }
+                ]
             );
 
             user.activationToken = token;
@@ -73,28 +82,36 @@ export default {
             });
 
         } catch (err) {
-            console.log(err);
+            console.error("Error during user registration:", err);
+            res.status(500).json({message: "Internal server error"});
         }
     },
-
     async activate(req, res) {
-        const {token} = req.query;
-        const user = await Users.findOne({where: {activationToken: token}});
 
-        if (!user) {
-            return res.status(422).json({message: "Invalid activation token"});
+        try {
+            const {token} = req.query;
+
+            const user = await Users.findOne({where: {activationToken: token}});
+
+            if (!user) {
+                return res.status(422).json({message: "Invalid activation token"});
+            }
+
+            user.status = "active";
+            await user.save();
+            res.render("userActive");
+        } catch (err) {
+            console.error("Error during activation:", err);
+            res.status(500).json({message: "Activation failed"});
         }
-
-        user.status = "active";
-        await user.save();
-        res.render("userActive");
     },
 
     // User Login
     async login(req, res, next) {
-        const {email, password} = req.body;
 
         try {
+            const {email, password} = req.body;
+
             const user = await Users.findOne({where: {email}});
 
             if (!user) {
@@ -176,7 +193,7 @@ export default {
             res.json({message: "Profile updated successfully"});
 
         } catch (error) {
-            console.log(error);
+            res.status(500).json({message: "Failed to update profile"});
         }
     },
 
@@ -204,12 +221,11 @@ export default {
 
         try {
             const user = await Users.findOne({where: {email}});
-
             if (!user) {
                 return res.status(404).json({message: "User not found"});
             }
 
-            const token = await helpers.createToken({userId: user.id});
+            const token = await helpers.createToken(user.id);
 
             await mail(
                 email,
@@ -218,7 +234,8 @@ export default {
                 "reset-password",
                 {
                     name: user.userName,
-                    link: `http://localhost:3000/user/reset-password?token=${token}`,
+                    email: user.email,
+                    link: `http://localhost:3000/user/resetPassword?token=${token}`,
                 }
             );
 
@@ -231,26 +248,28 @@ export default {
     },
 
     async resetPassword(req, res) {
-        const userId = req.userId;
-        const {newPassword} = req.body;
+
+
+        const {newPassword, token} = req.body;
 
         try {
-            const user = await Users.findByPk(userId);
-
+            const ifExist = helpers.verifyToken(token);
+            const user = await Users.findByPk(ifExist.userId);
             if (!user) {
                 return res.status(404).json({message: "User not found"});
             }
-
-            user.password = await Users.passwordHash(newPassword);
+            user.password = newPassword;
             await user.save();
 
             res.json({message: "Password has been updated."});
 
-        } catch (err) {
+        } catch
+            (err) {
             console.error(err);
-            res.status(500).json({message: "Failed to reset password"});
+            return res.status(500).json({message: "Failed to reset password"});
         }
-    },
+    }
+    ,
 
     // Favorites and Avatar
     async GetFavorites(req, res) {
@@ -267,7 +286,7 @@ export default {
             const favorites = await Favorites.findAll({
                 limit,
                 offset,
-                where: {user_id: userId},
+                where: {userId: userId},
                 include: [
                     {
                         model: Books,
@@ -284,7 +303,7 @@ export default {
                 subQuery: false,
             });
 
-            const totalFavorites = await Favorites.count({where: {user_id: userId}});
+            const totalFavorites = await Favorites.count({where: {userId: userId}});
 
             res.status(200).json({
                 favorites,
@@ -298,7 +317,8 @@ export default {
             console.error(error);
             res.status(500).json({error: "Failed to fetch favorites"});
         }
-    },
+    }
+    ,
 
     async postAvatar(req, res) {
         try {
@@ -309,7 +329,6 @@ export default {
             }
 
             const imgUrl = req.file;
-            console.log(imgUrl);
             const avatarPath = imgUrl.path.replace("public/uploads", "");
 
             await Users.update(
@@ -323,7 +342,8 @@ export default {
             });
 
         } catch (error) {
-            console.log(error);
+            res.status(500).json({message: "Error uploading avatar"});
         }
-    },
+    }
+    ,
 };

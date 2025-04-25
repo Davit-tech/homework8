@@ -47,11 +47,11 @@ Favorites.init({
     modelName: "favorites",
 
 });
-Users.hasMany(Favorites, {foreignKey: "user_id", as: "favorites"});
-Favorites.belongsTo(Users, {foreignKey: "user_id", as: "user"});
+Users.hasMany(Favorites, {foreignKey: "userId", as: "favorites", onDelete: 'CASCADE'});
+Favorites.belongsTo(Users, {foreignKey: "userId", as: "user"});
 
-Favorites.belongsTo(Books, {foreignKey: "book_id", as: "book"});
-Books.hasMany(Favorites, {foreignKey: "book_id", as: "favorites"});
+Books.hasMany(Favorites, {foreignKey: "bookId", as: "favorites", onDelete: 'CASCADE'});
+Favorites.belongsTo(Books, {foreignKey: "bookId", as: "book"});
 
 
 export default Favorites;

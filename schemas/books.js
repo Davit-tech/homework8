@@ -16,7 +16,6 @@ export default {
         limit: joi.number().integer().min(5).max(20).default(20),
         orderBy: joi.string().valid("createdAt", "updatedAt", "avgRating").default("createdAt"),
         order: joi.string().valid("DESC", "ASC").default("DESC"),
+        q: joi.string().max(50).allow(''),
     })
-
-
 };

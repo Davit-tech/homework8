@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 
-export default async function (to, from, subject, template, data) {
+export default async function (to, from, subject, template, data, attachments = []) {
     const templatePath = path.join(import.meta.dirname, "../views/email/", template + ".ejs")
     const html = await ejs.renderFile(templatePath, {data});
     const info = await transporter.sendMail({
@@ -22,6 +22,7 @@ export default async function (to, from, subject, template, data) {
         to,
         subject,
         html,
+        attachments,
     });
 
     console.log("Message sent: %s", info.messageId);

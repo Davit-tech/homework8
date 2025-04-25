@@ -1,6 +1,6 @@
-import {Books, Reviews, Users} from "../models/index.js";
+import {Books, Reviews, Favorites} from "../models/index.js";
 import createError from "http-errors";
-import {col, fn} from "sequelize";
+import {col, fn, Op} from "sequelize";
 
 
 export default {
@@ -20,13 +20,24 @@ export default {
     // API for Books
     async getBooks(req, res, next) {
         try {
+            const q = req.query.q;
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 6;
 
             const offset = (page - 1) * limit;
+            const whereClause = q
+                ? {
+                    [Op.or]: [
+                        {title: {[Op.like]: `%${q}%`}},
+                        {description: {[Op.like]: `%${q}%`}},
+                        {author: {[Op.like]: `%${q}%`}}
+                    ]
+                }
+                : {};
             const booksData = await Books.findAll({
                 limit,
                 offset,
+                where: whereClause,
                 order: [["createdAt", "DESC"]],
                 include: [
                     {
@@ -43,7 +54,7 @@ export default {
                 group: ["Books.id"],
                 subQuery: false,
                 raw: true,
-                logging: console.log
+
             });
             const totalBooks = await Books.count();
             res.status(200).json({
@@ -61,20 +72,19 @@ export default {
     },
 
     async createBook(req, res, next) {
-        const {title, author, description} = req.body;
-        const userId = req.userId;
-        const file = req.file;
-        console.log(file)
-        console.log(req.file);
-
-        if (!userId) {
-            return res.status(400).json({error: "User ID is missing. Please log in first."});
-        }
-        const avatarPath = file.path.replace("public/uploads", "");
 
         try {
+            const {title, author, description} = req.body;
+            const userId = req.userId;
+            const file = req.file;
+
+
+            if (!userId) {
+                return res.status(400).json({error: "User ID is missing. Please log in first."});
+            }
+            const avatarPath = file.path.replace("public/uploads", "");
             const booksData = await Books.create({
-                user_id: userId,
+                userId: userId,
                 title,
                 author,
                 description,
@@ -90,11 +100,14 @@ export default {
     async updateBook(req, res) {
         try {
             const {bookId} = req.params;
+            const userId = req.userId;
             const {title, author, description} = req.body;
 
             const book = await Books.findByPk(bookId);
             if (!book) return res.status(404).json({message: "Book not found"});
-
+            if (book.userId !== userId) {
+                return res.status(403).json({message: "You are not authorized to update this book"});
+            }
             await book.update({title, author, description});
             res.status(200).json({message: "Book updated successfully", book});
         } catch (err) {
@@ -105,9 +118,14 @@ export default {
     async deleteBook(req, res) {
         try {
             const {bookId} = req.params;
+            const userId = req.userId;
+
             const book = await Books.findByPk(bookId);
             if (!book) return res.status(404).json({message: "Book not found"});
-
+            if (book.userId !== userId) {
+                return res.status(403).json({message: "You are not authorized to delete this book"});
+            }
+            // await Favorites.destroy({ where: { bookId } });
             await book.destroy();
             res.sendStatus(204);
         } catch (err) {

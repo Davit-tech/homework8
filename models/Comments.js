@@ -11,17 +11,17 @@ class Comments extends Model {
             defaultComments.push(
                 {
                     comments: `Great insights on review !`,
-                    user_id: ((reviewId + 1) % 10) + 1,
+                    userId: ((reviewId + 1) % 10) + 1,
                     review_id: reviewId,
                 },
                 {
                     comments: `I had a similar opinion about this book ).`,
-                    user_id: ((reviewId + 2) % 10) + 1,
+                    userId: ((reviewId + 2) % 10) + 1,
                     review_id: reviewId,
                 },
                 {
                     comments: `Thanks for sharing your thoughts on review .`,
-                    user_id: ((reviewId + 3) % 10) + 1,
+                    userId: ((reviewId + 3) % 10) + 1,
                     review_id: reviewId,
                 }
             );
@@ -29,7 +29,7 @@ class Comments extends Model {
         for (const comment of defaultComments) {
             await Comments.findOrCreate({
                 where: {
-                    user_id: comment.user_id,
+                    userId: comment.userId,
                     review_id: comment.review_id,
                     comments: comment.comments
                 },
@@ -57,9 +57,10 @@ Comments.init({
     tableName: 'comments',
     timestamps: true,
 });
-Users.hasMany(Comments, {foreignKey: "user_id", as: "comments"});
-Comments.belongsTo(Users, {foreignKey: "user_id", as: "user"});
-Reviews.hasMany(Comments, {foreignKey: "review_id", as: "comments"});
+Users.hasMany(Comments, {foreignKey: "userId", as: "comments", onDelete: 'CASCADE'});
+Comments.belongsTo(Users, {foreignKey: "userId", as: "user"});
+
+Reviews.hasMany(Comments, {foreignKey: "review_id", as: "comments", onDelete: 'CASCADE'});
 Comments.belongsTo(Reviews, {foreignKey: "review_id", as: "review"});
 
 export default Comments;

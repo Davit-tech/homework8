@@ -12,6 +12,7 @@
 
     const {user: {id: userId, userName}} = await responseUser.json();
     const limit = 3;
+
     const fetchFavorites = async (page) => {
         const response = await fetch(`/user/${userId}/favorites/data?page=${page}&limit=${limit}`, {
             method: "GET",
@@ -21,7 +22,6 @@
         });
 
         const {favorites, pagination} = await response.json();
-        console.log(favorites)
         booksContainer.innerHTML = renderFavoriteBooks(favorites);
         renderPagination(pagination, page);
     };
@@ -52,14 +52,14 @@
 
             html += `
                 <div class="userdata">
-                        <img src="/uploads/${bookCover || 'book-covers.jpg'}" alt="book cover" class="book-cover"> <br>
-                
+                    <button class="btn-delete-favorite" data-id="${book.id}">Delete From Favorites</button><br>
+                    <img src="/uploads/${bookCover || 'book-covers.jpg'}" alt="book cover" class="book-cover"> <br>
                     <strong>Book Author:</strong> ${book.author} <br><br>
                     <strong>Description:</strong> ${book.description} <br><br>
                     <strong>Book Name:</strong> ${book.title} <br><br>
                     <strong>User Name:</strong> ${userName} <br><br>
-                        <div class="rating">Rating: ${avgRating}</div> <br><br>
-                    
+                    <div class="rating">Rating: ${avgRating}</div> <br><br>
+
                     ${createdFormatted ? `<strong>Created:</strong> ${createdFormatted} <br>` : ''}
                     ${(book.updatedAt && book.updatedAt !== book.createdAt) ? `<strong>Updated:</strong> ${updatedFormatted} <br>` : ''}
                     <a href="/books/${book.id}/reviews" class="btn-read-reviews">Read Reviews</a><br>
@@ -99,4 +99,33 @@
     };
 
     fetchFavorites();
+
+
+    booksContainer.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("btn-delete-favorite")) {
+            const bookId = e.target.getAttribute("data-id");
+            try {
+                const response = await fetch(`/books/${bookId}/favorites`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({userId, bookId}),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+                    fetchFavorites();
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.error);
+                }
+            } catch (error) {
+                console.error("Error deleting favorite:", error);
+                alert("An error occurred while trying to delete from favorites.");
+            }
+        }
+    });
 })();

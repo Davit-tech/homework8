@@ -21,6 +21,7 @@ if (updateBookForm) {
                 }
             );
             const result = await response.json();
+            console.log(result.fields)
             if (response.ok) {
                 window.location.href = `/books/`;
             } else {

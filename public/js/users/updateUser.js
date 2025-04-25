@@ -17,6 +17,15 @@ if (editProfileForm) {
         });
 
         if (!res.ok) {
+            for (const [field, message] of Object.entries(result.fields)) {
+                const inputElement = document.querySelector(`[name="${field}"]`);
+                if (inputElement) {
+                    const errorSpan = document.createElement("span");
+                    errorSpan.classList.add("error-text");
+                    errorSpan.textContent = message;
+                    inputElement.parentNode.appendChild(errorSpan);
+                }
+            }
             alert("Error");
         } else {
             alert("User updated successfully.");

@@ -1,11 +1,14 @@
 document.getElementById("resetForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const newPassword = document.getElementById("newPassword").value;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
 
+    console.log(token)
     const res = await fetch(`/user/reset-password?token=${token}`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({newPassword})
+        body: JSON.stringify({newPassword, token})
     });
 
     const data = await res.json();
@@ -13,5 +16,7 @@ document.getElementById("resetForm").addEventListener("submit", async (e) => {
 
     if (res.ok) {
         window.location.href = "/user/login";
+    } else {
+        console.log("error")
     }
 });

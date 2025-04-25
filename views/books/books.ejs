@@ -8,10 +8,18 @@
         <li><a href="/books/createBook">Create Book</a></li>
         <li><a href="/user/profile">Profile</a></li>
         <li><a href="#" class="logout">Logout</a></li>
+
     </ul>
 </nav>
 <h1>Books</h1>
-<div id="search-results"></div>
+<div class="search-container">
+    <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Search books " required/>
+        <button id="searchBtn" type="submit">Search</button>
+    </form>
+</div>
+
+
 <div id="user-posts"></div>
 <div id="pagination"></div>
 
@@ -19,6 +27,7 @@
 
 <script src="/js/auth/userChecker.js"></script>
 <script src="/js/books/books.js"></script>
+
 
 </body>
 </html>
