@@ -19,12 +19,14 @@
 </nav>
 <h2>Edit Profile</h2>
 <form id="editProfileForm">
-    <label for="userName">User Name</label>
-    <input type="text" name="userName" placeholder="User Name"/>
+    <div class="row"><label for="userName">User Name</label>
+        <input type="text" name="userName" placeholder="User Name"/></div>
 
-    <label for="email">Email</label>
-    <input type="email" name="email" placeholder="Email"/>
-    <button type="submit">Save</button>
+    <div class="row"><label for="email">Email</label>
+        <input type="email" name="email" placeholder="Email"/> <br>
+        <button type="submit">Save</button>
+    </div>
+
 </form>
 
 <script src="/js/auth/userChecker.js"></script>

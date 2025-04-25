@@ -21,10 +21,7 @@ if (loginForm) {
             if (result.success) {
                 window.location.href = "/books/";
             } else {
-                if (messageContainer) {
-                    messageContainer.classList.add("error-message");
-                    messageContainer.innerHTML = result.message;
-                }
+
                 if (result.fields) {
                     for (const [field, message] of Object.entries(result.fields)) {
                         const inputElement = document.querySelector(`[name="${field}"]`);

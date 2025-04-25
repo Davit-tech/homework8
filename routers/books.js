@@ -15,7 +15,7 @@ router.get("/:bookId/update", booksController.getUpdateBooksView);
 
 // API
 router.get("/data", auth, validate(schemas.getBooks, "query"), booksController.getBooks);
-router.post("/data", auth, fileUpload.single("bookCover"), booksController.createBook);
+router.post("/data", auth, fileUpload.single("bookCover"), validate(schemas.createBook, "body"), booksController.createBook);
 router.put("/:bookId", auth, validate(schemas.updateBook, "body"), booksController.updateBook);
 router.delete("/:bookId", auth, booksController.deleteBook);
 router.post("/upload-bookCover", auth, fileUpload.single("avatar"), userController.postAvatar);

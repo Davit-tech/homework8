@@ -190,7 +190,7 @@ export default {
 
             await Users.update({userName, email}, {where: {id}});
 
-            res.json({message: "Profile updated successfully"});
+            res.json({message: "Profile updated successfully", success: true});
 
         } catch (error) {
             res.status(500).json({message: "Failed to update profile"});

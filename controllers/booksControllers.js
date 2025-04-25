@@ -75,12 +75,22 @@ export default {
 
         try {
             const {title, author, description} = req.body;
+
             const userId = req.userId;
             const file = req.file;
 
 
             if (!userId) {
                 return res.status(400).json({error: "User ID is missing. Please log in first."});
+            }
+            if (!file) {
+                return res.status(400).json({
+                    success: false,
+                    fields: {
+                        bookCover: "Please upload a book cover image.",
+                    }
+                });
+
             }
             const avatarPath = file.path.replace("public/uploads", "");
             const booksData = await Books.create({
@@ -91,9 +101,9 @@ export default {
                 bookCover: avatarPath,
 
             });
-            res.status(200).json({booksData, success: true});
+            res.status(200).json({booksData, success: true, messageType: "success",});
         } catch (err) {
-            return next(createError("Error creating book", err));
+            res.status(500).json({message: "Error creating book", error: err.message});
         }
     },
 

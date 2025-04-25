@@ -16,7 +16,6 @@ export default (schemas, target) => {
         console.log(JSON.stringify(error, null, 2));
 
         const fields = {};
-zz
         error.details.forEach((detail) => {
             fields[detail.path[0]] = detail.message;
         });

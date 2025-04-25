@@ -21,11 +21,11 @@ if (updateBookForm) {
                 }
             );
             const result = await response.json();
-            console.log(result.fields)
-            if (response.ok) {
+
+            if (result.success) {
                 window.location.href = `/books/`;
             } else {
-                if (result.fields) {
+
                     for (const [field, message] of Object.entries(result.fields)) {
                         const inputElement = document.querySelector(`[name="${field}"]`);
                         if (inputElement) {
@@ -35,9 +35,7 @@ if (updateBookForm) {
                             inputElement.parentNode.appendChild(errorSpan);
                         }
                     }
-                } else {
-                    console.error("Failed to update reviews", result);
-                }
+
             }
         } catch (e) {
             console.error("Error during request:", e);
