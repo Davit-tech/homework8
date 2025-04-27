@@ -21,7 +21,7 @@ if (loginForm) {
             if (result.success) {
                 localStorage.setItem("token", result.token);
                 setTimeout(() => {
-                    window.location.href = "/user/profile";
+                    window.location.href = "/books/";
                 }, 1000);
                 if (messageContainer) {
                     messageContainer.classList.add("success-message");

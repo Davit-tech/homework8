@@ -16,13 +16,14 @@ export default {
     forgotPassword: joi.object({
         email: joi.string().email().required()
     }),
-  updateProfile: joi.object({
-      userName: joi.string().min(3).max(50).required(),
-      email: joi.string().email().required(),
+    updateProfile: joi.object({
+        userName: joi.string().min(3).max(50).required(),
+        email: joi.string().email().required(),
 
-  }),
+    }),
     resetPassword: joi.object({
         token: joi.string().required(),
         newPassword: joi.string().min(3).max(50).required(),
+        newPassword1: joi.string().min(3).max(50).required(),
     }),
 };

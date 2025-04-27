@@ -1,7 +1,7 @@
-import {Books, Reviews, Favorites} from "../models/index.js";
+import {Books, Reviews, Category} from "../models/index.js";
 import createError from "http-errors";
 import {col, fn, Op} from "sequelize";
-
+import bookCategory from "../models/bookCategory.js";
 
 export default {
     // Views for Books
@@ -16,15 +16,16 @@ export default {
     async getUpdateBooksView(req, res) {
         res.render("books/updateBook");
     },
-
-    // API for Books
     async getBooks(req, res, next) {
         try {
+            const category = req.query.category;
             const q = req.query.q;
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 6;
 
             const offset = (page - 1) * limit;
+
+
             const whereClause = q
                 ? {
                     [Op.or]: [
@@ -34,6 +35,12 @@ export default {
                     ]
                 }
                 : {};
+
+            if (category) {
+                whereClause['$categories.name$'] = category;
+            }
+
+
             const booksData = await Books.findAll({
                 limit,
                 offset,
@@ -45,44 +52,59 @@ export default {
                         as: "reviews",
                         attributes: [],
                     },
+                    {
+                        model: Category,
+                        as: 'categories',
+                        where: category ? {name: category} : {},
+                        required: category ? true : false
+                    },
                 ],
                 attributes: {
                     include: [
                         [fn("ROUND", fn("AVG", col("reviews.rating")), 1), "avgRating"]
                     ],
                 },
-                group: ["Books.id"],
+                group: [
+                    "Books.id",
+                    "categories.id",
+                    "categories.name",
+
+                ],
                 subQuery: false,
                 raw: true,
-
             });
+
+
+
             const totalBooks = await Books.count();
+
+
             res.status(200).json({
                 booksData,
                 pagination: {
                     total: totalBooks,
                     page,
                     totalPages: Math.ceil(totalBooks / limit),
-
                 },
             });
         } catch (err) {
+            console.error('Error fetching books:', err);
             return next(createError("Error fetching books", err));
         }
     },
 
     async createBook(req, res, next) {
-
         try {
-            const {title, author, description} = req.body;
+            const {title, author, description, category} = req.body;
+            console.log(category);
 
             const userId = req.userId;
             const file = req.file;
 
-
             if (!userId) {
                 return res.status(400).json({error: "User ID is missing. Please log in first."});
             }
+
             if (!file) {
                 return res.status(400).json({
                     success: false,
@@ -90,8 +112,8 @@ export default {
                         bookCover: "Please upload a book cover image.",
                     }
                 });
-
             }
+
             const avatarPath = file.path.replace("public/uploads", "");
             const booksData = await Books.create({
                 userId: userId,
@@ -99,9 +121,28 @@ export default {
                 author,
                 description,
                 bookCover: avatarPath,
-
             });
-            res.status(200).json({booksData, success: true, messageType: "success",});
+            console.log(booksData.id);
+
+            if (category) {
+                const categoryRecord = await Category.findOne({where: {name: category}});
+
+                if (categoryRecord) {
+                    await bookCategory.create({
+                        bookId: booksData.id,
+                        categoryId: categoryRecord.id
+                    });
+                } else {
+                    return res.status(400).json({error: "Invalid category name. Make sure the category exists."});
+                }
+            }
+
+            res.status(200).json({
+                booksData,
+                success: true,
+                messageType: "success",
+            });
+
         } catch (err) {
             res.status(500).json({message: "Error creating book", error: err.message});
         }
@@ -124,7 +165,6 @@ export default {
             res.status(500).json({message: "Error updating book", error: err.message});
         }
     },
-
     async deleteBook(req, res) {
         try {
             const {bookId} = req.params;
@@ -142,5 +182,6 @@ export default {
             res.status(500).json({message: "Error deleting book", error: err.message});
         }
     },
-
 };
+
+

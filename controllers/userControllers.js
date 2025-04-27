@@ -31,8 +31,7 @@ export default {
 
     async forgetPasswordView(req, res) {
         res.render("users/forgot-password");
-    },
-    async resetPasswordView(req, res) {
+    }, async resetPasswordView(req, res) {
         res.render("users/reset-password");
     },
 
@@ -54,39 +53,24 @@ export default {
             const user = await Users.create({userName, email, password});
             const token = await helpers.createToken({userId: user.id});
 
-            await mail(
-                email,
-                '"Maddison Foo Koch 👻" <maddison53@ethereal.email>',
-                "Profile activation email",
-                "activate-user",
-                {
-                    name: userName,
-                    link: `http://localhost:3000/user/activate?${qs.stringify({token})}`,
-                },
-                [
-                    {
-                        filename: "book-covers.jpg",
-                        path: path.join(import.meta.dirname, "../public/uploads/book-covers.jpg")
-                    }
-                ]
-            );
+            await mail(email, '"Maddison Foo Koch 👻" <maddison53@ethereal.email>', "Profile activation email", "activate-user", {
+                name: userName, link: `http://localhost:3000/user/activate?${qs.stringify({token})}`,
+            }, [{
+                filename: "book-covers.jpg", path: path.join(import.meta.dirname, "../public/uploads/book-covers.jpg")
+            }]);
 
             user.activationToken = token;
             await user.save();
 
             res.status(201).json({
-                user,
-                success: true,
-                message: "Registration successful!",
-                messageType: "success",
+                user, success: true, message: "Registration successful!", messageType: "success",
             });
 
         } catch (err) {
             console.error("Error during user registration:", err);
             res.status(500).json({message: "Internal server error"});
         }
-    },
-    async activate(req, res) {
+    }, async activate(req, res) {
 
         try {
             const {token} = req.query;
@@ -116,9 +100,7 @@ export default {
 
             if (!user) {
                 return res.status(422).json({
-                    success: false,
-                    message: "User not found",
-                    messageType: "error",
+                    success: false, message: "User not found", messageType: "error",
                 });
             }
 
@@ -136,16 +118,11 @@ export default {
             if (isMatch) {
                 const token = await helpers.createToken(user.id);
                 return res.status(200).json({
-                    token,
-                    user,
-                    message: "Login successfully",
-                    success: true,
+                    token, user, message: "Login successfully", success: true,
                 });
             } else {
                 return res.status(422).json({
-                    success: false,
-                    messageType: "error",
-                    message: "Invalid password",
+                    success: false, messageType: "error", message: "Invalid password",
                 });
             }
 
@@ -227,17 +204,9 @@ export default {
 
             const token = await helpers.createToken(user.id);
 
-            await mail(
-                email,
-                '"Maddison Foo Koch 👻" <maddison53@ethereal.email>',
-                "Password Reset",
-                "reset-password",
-                {
-                    name: user.userName,
-                    email: user.email,
-                    link: `http://localhost:3000/user/resetPassword?token=${token}`,
-                }
-            );
+            await mail(email, '"Maddison Foo Koch 👻" <maddison53@ethereal.email>', "Password Reset", "reset-password", {
+                name: user.userName, email: user.email, link: `http://localhost:3000/user/resetPassword?token=${token}`,
+            });
 
             res.json({message: "Password reset email sent."});
 
@@ -250,26 +219,28 @@ export default {
     async resetPassword(req, res) {
 
 
-        const {newPassword, token} = req.body;
-
+        const {newPassword, newPassword1, token} = req.body;
+        console.log(newPassword1, newPassword);
+        if (newPassword !== newPassword1) {
+            return res.status(400).json({message: "Passwords do not match"});
+        }
         try {
             const ifExist = helpers.verifyToken(token);
             const user = await Users.findByPk(ifExist.userId);
             if (!user) {
                 return res.status(404).json({message: "User not found"});
             }
+
             user.password = newPassword;
             await user.save();
 
             res.json({message: "Password has been updated."});
 
-        } catch
-            (err) {
+        } catch (err) {
             console.error(err);
             return res.status(500).json({message: "Failed to reset password"});
         }
-    }
-    ,
+    },
 
     // Favorites and Avatar
     async GetFavorites(req, res) {
@@ -284,41 +255,25 @@ export default {
             }
 
             const favorites = await Favorites.findAll({
-                limit,
-                offset,
-                where: {userId: userId},
-                include: [
-                    {
-                        model: Books,
-                        as: "book",
-                        attributes: {
-                            include: [[fn("ROUND", fn("AVG", col("book.reviews.rating")), 1), "avgRating"]],
-                        },
-                        include: [
-                            {model: Reviews, as: "reviews", attributes: []},
-                        ],
-                    },
-                ],
-                group: ["favorites.id", "book.id"],
-                subQuery: false,
+                limit, offset, where: {userId: userId}, include: [{
+                    model: Books, as: "book", attributes: {
+                        include: [[fn("ROUND", fn("AVG", col("book.reviews.rating")), 1), "avgRating"]],
+                    }, include: [{model: Reviews, as: "reviews", attributes: []},],
+                },], group: ["favorites.id", "book.id"], subQuery: false,
             });
 
             const totalFavorites = await Favorites.count({where: {userId: userId}});
 
             res.status(200).json({
-                favorites,
-                pagination: {
-                    total: totalFavorites,
-                    page,
-                    totalPages: Math.ceil(totalFavorites / limit),
+                favorites, pagination: {
+                    total: totalFavorites, page, totalPages: Math.ceil(totalFavorites / limit),
                 },
             });
         } catch (error) {
             console.error(error);
             res.status(500).json({error: "Failed to fetch favorites"});
         }
-    }
-    ,
+    },
 
     async postAvatar(req, res) {
         try {
@@ -331,19 +286,14 @@ export default {
             const imgUrl = req.file;
             const avatarPath = imgUrl.path.replace("public/uploads", "");
 
-            await Users.update(
-                {avatar: avatarPath},
-                {where: {id: userId}}
-            );
+            await Users.update({avatar: avatarPath}, {where: {id: userId}});
 
             res.status(201).json({
-                message: "Avatar uploaded and saved to DB",
-                avatar: avatarPath,
+                message: "Avatar uploaded and saved to DB", avatar: avatarPath,
             });
 
         } catch (error) {
             res.status(500).json({message: "Error uploading avatar"});
         }
-    }
-    ,
+    },
 };

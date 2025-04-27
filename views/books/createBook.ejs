@@ -11,24 +11,42 @@
 </nav>
 <div id="message-container"></div>
 
-<form id="book-form" enctype="multipart/form-data" >
+<form id="book-form" enctype="multipart/form-data">
     <div class="row">
-    <label for="title">Book Name</label>
-    <input type="text" id="title" name="title">
+        <label for="title">Book Name</label>
+        <input type="text" id="title" name="title">
     </div>
     <div class="row">
-    <label for="author">Book Author</label>
-    <input type="text" id="author" name="author">
+        <label for="author">Book Author</label>
+        <input type="text" id="author" name="author">
     </div>
     <div class="row">
-    <label for="description">Description</label>
-    <textarea id="description" name="description"></textarea>
+        <label for="description">Description</label>
+        <textarea id="description" name="description"></textarea>
     </div>
     <div class="row">
-    <label for="image">Book Image</label>
-    <input type="file" id="image" name="bookCover" >
+        <label for="image">Book Image</label>
+        <input type="file" id="image" name="bookCover">
+    </div>
+    <div class="row">
+        <label for="category">Category:</label>
+        <select name="category" id="category">
+            <option value="" disabled selected>-- Select Category --</option>
+            <option value="fiction">Fiction</option>
+            <option value="non-fiction">Non-fiction</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="sci-fi">Science Fiction</option>
+            <option value="romance">Romance</option>
+            <option value="thriller">Thriller</option>
+            <option value="biography">Biography</option>
+            <option value="self-help">Self-Help</option>
+            <option value="children">Children's Books</option>
+            <option value="young-adult">Young Adult</option>
+            <option value="comics">Comics / Manga</option>
+        </select>
     </div>
     <button type="submit">Add Book</button>
+
 </form>
 
 <script src="/js/auth/userChecker.js"></script>

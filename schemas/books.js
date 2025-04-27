@@ -5,7 +5,7 @@ export default {
         title: joi.string().min(3).max(50).required(),
         author: joi.string().required(),
         description: joi.string().min(3).max(50).required(),
-        bookCover: joi.string().required(),
+        category: joi.string().required(),
     }),
     updateBook: joi.object({
         title: joi.string().min(3).max(50).required(),
@@ -18,5 +18,6 @@ export default {
         orderBy: joi.string().valid("createdAt", "updatedAt", "avgRating").default("createdAt"),
         order: joi.string().valid("DESC", "ASC").default("DESC"),
         q: joi.string().max(50).allow(''),
+        category: joi.string().allow(''),
     })
 };

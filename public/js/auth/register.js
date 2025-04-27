@@ -20,12 +20,12 @@ if (registerForm) {
       if (result.success) {
         if (messageContainer) {
           messageContainer.classList.add("success-message");
-          messageContainer.innerHTML = result.message;
+          messageContainer.innerHTML = "Registration successful!, Sending you an email to verify your account.";
         }
 
         setTimeout(() => {
           window.location.href = "/user/login";
-        }, 1000);
+        }, 1500);
       } else {
         if (messageContainer) {
           messageContainer.classList.add("error-message");

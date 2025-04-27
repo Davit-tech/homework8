@@ -3,9 +3,9 @@
 <%- include("../partials/head.ejs") %>
 <body>
 
-<div class="container">
+
     <h2>Register</h2>
-    <a href="/" class="link">Home</a>
+
     <div id="message-container">
 
     </div>
@@ -21,10 +21,11 @@
             <input type="email" name="email" id="email" placeholder="email@example.com">
         </div>
 
-        <div>
+        <div class="row">
 
             <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder=" Password">
+            <br>
             <button type="button" id="togglePassword">
                 <i class="fa-solid fa-eye"></i>
             </button>
@@ -34,11 +35,11 @@
             <input type="submit" value="Register">
         </div>
 
+        <a href="/user/login" class="link">Already have an account? LogIn</a>
 
     </form>
-    <a href="/user/login" class="link">Already have an account? LogIn</a>
 
-</div>
+
 
 <script src="/js/auth/register.js"></script>
 </body>

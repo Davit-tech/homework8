@@ -14,14 +14,29 @@
 <h1>Books</h1>
 <div class="search-container">
     <form id="searchForm">
-        <input type="text" id="searchInput" placeholder="Search books " required/>
+        <input type="text" id="searchInput" placeholder="Search books" required/>
+
+        <select id="categorySelect" name="category">
+            <option value="">Select Category</option>
+            <option value="fiction">Fiction</option>
+            <option value="non-fiction">Non-fiction</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="sci-fi">Science Fiction</option>
+            <option value="romance">Romance</option>
+            <option value="thriller">Thriller</option>
+            <option value="biography">Biography</option>
+            <option value="self-help">Self-Help</option>
+            <option value="children">Children's Books</option>
+            <option value="young-adult">Young Adult</option>
+            <option value="comics">Comics / Manga</option>
+        </select>
         <button id="searchBtn" type="submit">Search</button>
     </form>
 </div>
 
-
 <div id="user-posts"></div>
 <div id="pagination"></div>
+
 
 <div id="pagination-container" class="pagination"></div>
 

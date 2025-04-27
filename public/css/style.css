@@ -50,8 +50,7 @@ h1, h2 {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
-    display: flex
-;
+    display: flex;
     text-align: center;
     flex-direction: column;
     align-items: center;
@@ -346,6 +345,7 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
 .comment-page-btn {
     margin: 2px;
     padding: 6px 10px;
@@ -361,6 +361,7 @@ a:hover {
     color: white;
     cursor: default;
 }
+
 .load-more-btn {
     display: block;
     margin: 10px 0;
@@ -372,6 +373,7 @@ a:hover {
     border-radius: 4px;
     cursor: pointer;
 }
+
 textarea {
     width: 98%;
     padding: 10px 12px;
@@ -397,22 +399,27 @@ textarea:focus {
     border-radius: 50%;
     cursor: pointer;
 }
+
 .book-cover {
     width: 150px;
     height: auto;
     border-radius: 8px;
- display: grid;
+    display: grid;
 }
-.btn-add-favorite{
+
+.btn-add-favorite {
     background-color: yellow;
     color: black;
 }
-#avatar-input{
+
+#avatar-input {
     display: none;
 }
-#updated-block{
+
+#updated-block {
     display: none;
 }
+
 .search-container {
     display: flex;
     justify-content: center;
@@ -462,4 +469,101 @@ textarea:focus {
 
 #searchBtn:hover {
     background-color: #2980b9;
+}
+
+.container, form {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.row {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #74ebd5;
+    outline: none;
+}
+
+input[type="submit"] {
+    background-color: #74ebd5;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #4ecdc4;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #74ebd5;
+}
+
+#categorySelect {
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 1rem;
+    outline: none;
+    background-color: #f9f9f9;
+    color: #555;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-position: right 15px center;
+    background-size: 10px 5px;
+}
+
+#categorySelect:hover {
+    background-color: #f0f8ff;
+    border-color: #3498db;
+}
+
+#categorySelect:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    background-color: #ffffff;
 }

@@ -2,7 +2,7 @@
     const booksContainer = document.querySelector("#user-posts");
     const token = localStorage.getItem("token");
     const searchInput = document.querySelector("#searchInput");
-
+    const categorySelect = document.querySelector("#categorySelect");
 
     const response = await fetch("/user/profile/data", {
         method: "GET",
@@ -11,7 +11,7 @@
         }
     });
 
-    const {user: {id: userId, userName}} = await response.json();
+    const { user: { id: userId, userName } } = await response.json();
     document.querySelector(".navbar .nav-list").innerHTML += `
         <li><a href="/user/${userId}/favorites">Favorites</a></li>
     `;
@@ -19,6 +19,7 @@
     let currentPage = 1;
     const limit = 6;
     let searchQuery = "";
+    let selectedCategory = "";
 
     const formatDate = (date) => {
         return date
@@ -32,15 +33,15 @@
             : '';
     };
 
-    const fetchBooks = async (page, searchQuery = "") => {
-        const responseBook = await fetch(`/books/data?page=${page}&limit=${limit}&q=${searchQuery}`, {
+    const fetchBooks = async (page, searchQuery = "", category = "") => {
+        const responseBook = await fetch(`/books/data?page=${page}&limit=${limit}&q=${searchQuery}&category=${category}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
             }
         });
 
-        const {booksData, pagination} = await responseBook.json();
+        const { booksData, pagination } = await responseBook.json();
 
         const renderBooks = (books, userId) => {
             if (!Array.isArray(books)) return '';
@@ -92,13 +93,13 @@
         }
     };
 
-    await fetchBooks(currentPage, searchQuery);
+    await fetchBooks(currentPage, searchQuery, selectedCategory);
 
     document.body.addEventListener("click", async (event) => {
         if (event.target.classList.contains("page-btn")) {
             const page = event.target.getAttribute("data-page");
             currentPage = parseInt(page);
-            await fetchBooks(currentPage, searchQuery);
+            await fetchBooks(currentPage, searchQuery, selectedCategory);
         }
     });
 
@@ -158,11 +159,16 @@
         }
     });
 
-
     searchInput.addEventListener("input", () => {
         searchQuery = searchInput.value;
-        fetchBooks(currentPage, searchQuery);
+        fetchBooks(currentPage, searchQuery, selectedCategory);
     });
+
+    categorySelect.addEventListener("change", () => {
+        selectedCategory = categorySelect.value;
+        fetchBooks(currentPage, searchQuery, selectedCategory);
+    });
+
     const logout = document.querySelector(".logout");
     if (logout) {
         logout.addEventListener("click", () => {
@@ -171,4 +177,3 @@
         });
     }
 })();
-

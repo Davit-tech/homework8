@@ -1,12 +1,30 @@
-import {DataTypes, Model} from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import db from "../clients/db.mysql.js";
 
 class Category extends Model {
     static async createDefaults() {
-        const defaultCategories = []
+        const defaultCategories = [
+            { name: "Fiction" },
+            { name: "Non-fiction" },
+            { name: "Fantasy" },
+            { name: "Science Fiction" },
+            { name: "Romance" },
+            { name: "Thriller" },
+            { name: "Biography" },
+            { name: "Self-Help" },
+            { name: "Children's Books" },
+            { name: "Young Adult" },
+            { name: "Comics / Manga" }
+        ];
+
+        for (const category of defaultCategories) {
+            await Category.findOrCreate({
+                where: { name: category.name },
+                defaults: category,
+            });
+        }
         return {};
     }
-
 }
 
 Category.init({
@@ -19,7 +37,7 @@ Category.init({
     name: {
         type: DataTypes.STRING,
         allowNull: false,
-        // unique: true,
+        unique: true,
     }
 }, {
     sequelize: db,
@@ -27,6 +45,5 @@ Category.init({
     tableName: 'categories',
     timestamps: true,
 });
-
 
 export default Category;

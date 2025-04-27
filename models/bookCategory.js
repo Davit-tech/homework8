@@ -3,10 +3,9 @@ import db from "../clients/db.mysql.js";
 import Books from './Books.js';
 import Category from './Category.js';
 
-
 class BookCategory extends Model {
     static async createDefaults() {
-        return {}
+        return {};
     }
 }
 
@@ -17,8 +16,6 @@ BookCategory.init({
         autoIncrement: true,
         allowNull: false,
     },
-
-
 }, {
     sequelize: db,
     modelName: 'BookCategory',
@@ -26,12 +23,20 @@ BookCategory.init({
     timestamps: true,
 });
 
+
 Category.belongsToMany(Books, {
     through: BookCategory,
-    foreignKey: 'category_id',
+    foreignKey: 'categoryId',
     otherKey: 'bookId',
     as: 'books'
 });
 
+
+Books.belongsToMany(Category, {
+    through: BookCategory,
+    foreignKey: 'bookId',
+    otherKey: 'categoryId',
+    as: 'categories'
+});
 
 export default BookCategory;
