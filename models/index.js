@@ -5,6 +5,7 @@ import {default as Favorites} from "./Favorites.js";
 import {default as Comments} from "./Comments.js";
 import {default as Category} from "./Category.js";
 import {default as BookCategory} from "./bookCategory.js";
+import {default as Messages} from "./Messages.js";
 
 export {
     Users,
@@ -13,5 +14,6 @@ export {
     Favorites,
     Comments,
     Category,
-    BookCategory
+    BookCategory,
+    Messages
 };

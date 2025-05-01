@@ -1,8 +1,8 @@
-import {Users, Books, Reviews, Favorites, Comments, Category, BookCategory} from "./models/index.js";
+import {Users, Books, Reviews, Favorites, Comments, Category, BookCategory, Messages} from "./models/index.js";
 
 
 (async () => {
-    const models = [Users, Books, Reviews, Favorites, Comments, Category, BookCategory];
+    const models = [Users, Books, Reviews, Favorites, Comments, Category, BookCategory, Messages];
     for (const model of models) {
         console.warn("Migrate", model.name);
 

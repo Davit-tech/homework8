@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include("./partials/head.ejs") %>
+
+<body>
+<div class="container_chat">
+    <div id="users" class="user-list"></div>
+
+    <div id="chat">
+        <ul id="messages"></ul>
+        <form id="form" style="display: none;">
+            <input id="input" autocomplete="off" placeholder="Type a message..."/>
+            <button>Send</button>
+        </form>
+
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/messageSocket.js"></script>
+</body>
+</html>

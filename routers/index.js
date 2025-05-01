@@ -6,6 +6,7 @@ import bookRouter from "./books.js";
 import reviewRouter from "./reviews.js";
 import favoriteRouter from "./favorites.js";
 import commentRouter from "./comments.js";
+import chatRouter from "./chat.js";
 
 
 router.use("/user", userRouter);
@@ -13,6 +14,8 @@ router.use("/books", bookRouter);
 router.use("/books", reviewRouter);
 router.use("/books", favoriteRouter);
 router.use("/reviews", commentRouter)
+router.use('/chat', chatRouter);
+
 router.get("/", (req, res) => {
     res.render("home",);
 });

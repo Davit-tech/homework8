@@ -17,6 +17,7 @@ router.get("/resetPassword", userController.resetPasswordView)
 
 // API
 router.get("/profile/data", auth, userController.profile);
+router.get("/users", auth, userController.getUserList)
 router.post("/register", validate(schemas.register, "body"), userController.register);
 router.post("/login", validate(schemas.login, "body"), userController.login);
 router.put("/profile", auth, validate(schemas.updateProfile, "body"), userController.updateUserProfile);

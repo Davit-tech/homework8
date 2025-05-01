@@ -1,7 +1,7 @@
 import {Books, Favorites, Reviews, Users} from "../models/index.js";
 import helpers from "../utils/helpers.js";
 import createError from "http-errors";
-import {col, fn} from "sequelize";
+import {col, fn, Op} from "sequelize";
 import mail from "../services/mail.js";
 import qs from "query-string";
 import path from "path";
@@ -296,4 +296,31 @@ export default {
             res.status(500).json({message: "Error uploading avatar"});
         }
     },
+    async getUserList(req, res, next) {
+        const userId = req.userId;
+        try {
+            const users = await Users.findAll({
+                where: {id: {[Op.ne]: +userId}}
+            });
+            res.status(200).json({
+                users,
+            });
+        } catch (error) {
+            next(error);
+        }
+
+    }
 };
+
+
+//router.get('/users', auth, async (req, res, next) => {
+//     try {
+//         res.json({
+//             users: await Users.findAll({
+//                 where: {id: {[Op.ne]: +req.userId}}
+//             }),
+//         });
+//     } catch (e) {
+//         next(e);
+//     }
+// });

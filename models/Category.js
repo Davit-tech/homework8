@@ -37,13 +37,16 @@ Category.init({
     name: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+
     }
 }, {
     sequelize: db,
     modelName: 'Category',
     tableName: 'categories',
     timestamps: true,
+    indexes: [
+        {fields: ["name"], unique: true},
+    ]
 });
 
 export default Category;

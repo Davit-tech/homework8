@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import createError from 'http-errors';
 
 const {USER_AUTH_SECRET} = process.env;
 
@@ -11,8 +12,8 @@ export default {
         try {
             return jwt.verify(token, USER_AUTH_SECRET);
         } catch (error) {
-            console.error('Token verification failed:', error);
-            return null;
+            console.error('Token verification failed:', error.message);
+            throw createError(401, 'Invalid or expired token');
         }
     }
 };
